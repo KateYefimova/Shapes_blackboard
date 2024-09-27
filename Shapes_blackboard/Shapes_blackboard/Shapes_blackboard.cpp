@@ -364,13 +364,20 @@ public:
     }
 
     bool isInBounds(double x, double y) const {
-        return x >= 0 && x < BOARD_WIDTH && y >= 0 && y < BOARD_HEIGHT;
+        if (x < 0 || y < 0) {
+            cout << "err1" << endl;
+            return false;
+        }
+        if (x > BOARD_WIDTH || y > BOARD_HEIGHT) {
+            cout << "err" << endl;
+            return false;
+        }
+        return true;
     }
 
     void addCircle(double x, double y, double r) {
         if (!isOccupied(x, y, "circle", r)) {
-            if (isInBounds(x, y) && isInBounds(x - r, y) && isInBounds(x + r, y) &&
-                isInBounds(x, y - r) && isInBounds(x, y + r)) {
+            if (isInBounds(x, y) || isInBounds(x - r, y) || isInBounds(x + r, y) || isInBounds(x, y - r) || isInBounds(x, y + r)) {
                 shapes.push_back(new Circle(nextID++, x, y, r));
             }
             else {
@@ -385,7 +392,7 @@ public:
 
     void addSquare(double x, double y, double s) {
         if (!isOccupied(x, y, "square", s)) {
-            if (isInBounds(x, y) && isInBounds(x + s - 1, y) && isInBounds(x, y + s - 1)) {
+            if (isInBounds(x, y) || isInBounds(x + s - 1, y) || isInBounds(x, y + s - 1)) {
                 shapes.push_back(new Square(nextID++, x, y, s));
             }
             else {
@@ -402,7 +409,7 @@ public:
         if (!isOccupied(x, y, "triangle", b, h)) {
             int startX = static_cast<int>(x);
             int startY = static_cast<int>(y);
-            if (isInBounds(x, y) && isInBounds(x - b / 2, y + h - 1) && isInBounds(x + b / 2, y + h - 1) && isInBounds(x, y + h)) {
+            if (isInBounds(x, y) || isInBounds(x - b / 2, y + h - 1) || isInBounds(x + b / 2, y + h - 1) || isInBounds(x, y + h)) {
                 shapes.push_back(new Triangle(nextID++, x, y, b, h));
             }
             else {
@@ -418,7 +425,7 @@ public:
         // Перевіряємо, чи лінія може бути розміщена на цих координатах
         if (!isOccupied(x1, y1, "line", x2, y2)) {
             // Перевіряємо, чи координати початку і кінця лінії в межах дошки
-            if (isInBounds(x1, y1) && isInBounds(x2, y2)) {
+            if (isInBounds(x1, y1) || isInBounds(x2, y2)) {
                 // Якщо все добре, додаємо лінію на дошку
                 shapes.push_back(new Line(nextID++, x1, y1, x2, y2));
             }
@@ -435,7 +442,7 @@ public:
         // Перевіряємо, чи місце для прямокутника вільне
         if (!isOccupied(x, y, "rectangle", width, height)) {
             // Перевіряємо, чи прямокутник не виходить за межі дошки
-            if (isInBounds(x, y) && isInBounds(x + width - 1, y + height - 1)) {
+            if (isInBounds(x, y) || isInBounds(x + width - 1, y + height - 1)) {
                 // Якщо всі умови виконані, додаємо новий прямокутник
                 shapes.push_back(new Rectangle(nextID++, x, y, width, height));
             }
