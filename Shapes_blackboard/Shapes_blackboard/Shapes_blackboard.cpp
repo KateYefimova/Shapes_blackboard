@@ -11,15 +11,15 @@ const int BOARD_HEIGHT = 25;
 class Shapes {
 protected:
     int id;
-    double x, y;
+    int x, y;
     string shape;
 public:
-    Shapes(string s, int id, double x, double y) : shape(s), id(id), x(x), y(y) {}
+    Shapes(string s, int id, int x, int y) : shape(s), id(id), x(x), y(y) {}
     virtual string getInfo() const = 0;
     virtual string getShape() const { return shape; }
     int getID() const { return id; }
-    double getX() const { return x; }
-    double getY() const { return y; }
+    int getX() const { return x; }
+    int getY() const { return y; }
     virtual void drawOnBoard(vector<vector<char>>& grid) const = 0;
     virtual string getLoad() const = 0;
     virtual ~Shapes() {}
@@ -27,64 +27,60 @@ public:
 
 class Triangle : public Shapes {
 private:
-    double base, height;
+    double  height;
 public:
-    Triangle(int id, double x, double y, double b, double h)
-        : Shapes( "Triangle", id, x, y), base(b), height(h) {}
+    Triangle(int id, int x, int y,  double h)
+        : Shapes( "Triangle", id, x, y),  height(h) {}
 
     string getShape() const override {
         return "triangle";
     }
-
     string getInfo() const override {
-        return "Triangle: ID=" + to_string(id) + " Base=" + to_string(base) +
+        return "Triangle: ID=" + to_string(id)  +
             " Height=" + to_string(height) + " at (" + to_string(x) + "," + to_string(y) + ")";
     }
     string getLoad() const override {
-        return "Triangle: " + to_string(id) + " " + to_string(x) + " " + to_string(y) + " " + to_string(base) + " " + to_string(height);
+        return "Triangle: " + to_string(id) + " " + to_string(x) + " " + to_string(y) +  " " + to_string(height);
     }
-    // Оновлена функція для відображення трикутника
     void drawOnBoard(vector<vector<char>>& grid) const override {
-        int startX = static_cast<int>(x);
-        int startY = static_cast<int>(y);
-        int heightInt = static_cast<int>(height);
-
-        if (startY + heightInt - 1 >= BOARD_HEIGHT || startY < 0 ||
-            startX - heightInt < 0 || startX + heightInt >= BOARD_WIDTH) {
-            return;  // Triangle is out of bounds, do not draw
-        }
-
+        //int startX = static_cast<int>(x);
+        //int startY = static_cast<int>(y);
+        //int heightInt = static_cast<int>(height);
+        int startX = x;
+        int startY = y;
+        int heightInt = height;
         // Малюємо сторони трикутника
         for (int i = 0; i < heightInt; ++i) {
-            int leftMost = startX - i;
-            int rightMost = startX + i;
-            int posY = startY + i;
+            int leftMost = startX - i; // Left boundary at the current level
+            int rightMost = startX + i; // Right boundary at the current level
+            int posY = startY + i; // Vertical position of the current level
 
             if (posY < BOARD_HEIGHT) {
                 if (leftMost >= 0 && leftMost < BOARD_WIDTH)
-                    grid[posY][leftMost] = '*';  // Ліва сторона
+                    grid[posY][leftMost] = '*'; // Left side of the triangle
 
                 if (rightMost >= 0 && rightMost < BOARD_WIDTH && leftMost != rightMost)
-                    grid[posY][rightMost] = '*';  // Права сторона
+                    grid[posY][rightMost] = '*'; // Right side of the triangle
             }
         }
-
-        // Малюємо основу трикутника
         for (int j = 0; j < 2 * heightInt - 1; ++j) {
-            int baseX = startX - heightInt + 1 + j;
-            int baseY = startY + heightInt - 1;
+            int baseX = x - heightInt + 1 + j;
+            int baseY = y + heightInt - 1;
             if (baseX >= 0 && baseX < BOARD_WIDTH && baseY < BOARD_HEIGHT)
                 grid[baseY][baseX] = '*';
         }
+
+        
     }
+
 };
 
 class Circle : public Shapes {
 private:
     double radius;
 public:
-    Circle( int id, double x, double y, double r) : Shapes("Circle", id, x, y), radius(r) {}
-
+    Circle( int id, int x, int y, double r) : Shapes("Circle", id, x, y), radius(r) {}
+    
     string getInfo() const override {
         return "Circle: ID=" + to_string(id) + " Radius=" + to_string(radius) +
             " at (" + to_string(x) + "," + to_string(y) + ")";
@@ -96,7 +92,6 @@ public:
         return "circle";
     }
     void drawOnBoard(vector<vector<char>>& grid) const override {
-        // Спрощена логіка відображення кола
         for (int i = -radius; i <= radius; ++i) {
             for (int j = -radius; j <= radius; ++j) {
                 int posX = static_cast<int>(x + i);
@@ -116,8 +111,8 @@ class Square : public Shapes {
 private:
     double side;
 public:
-    Square(int id, double x, double y, double s) : Shapes("Square", id, x, y), side(s) {}
-
+    Square(int id, int x, int y, double s) : Shapes("Square", id, x, y), side(s) {}
+    
     string getInfo() const override {
         return "Square: ID=" + to_string(id) + " Side=" + to_string(side) +
             " at (" + to_string(x) + "," + to_string(y) + ")";
@@ -129,26 +124,24 @@ public:
         return "square";
     }
     void drawOnBoard(vector<vector<char>>& grid) const override {
-        int startX = static_cast<int>(x);
-        int startY = static_cast<int>(y);
-        int sideInt = static_cast<int>(side);
+        int startX = x;
+        int startY = y;
+        int sideInt = side;
 
-        // Draw top and bottom edges
         for (int i = 0; i < sideInt; ++i) {
             if (startX + i < BOARD_WIDTH && startY < BOARD_HEIGHT)
-                grid[startY][startX + i] = '*';  // Top edge
+                grid[startY][startX + i] = '*';  
 
             if (startX + i < BOARD_WIDTH && startY + sideInt - 1 < BOARD_HEIGHT)
-                grid[startY + sideInt - 1][startX + i] = '*';  // Bottom edge
+                grid[startY + sideInt - 1][startX + i] = '*';  
         }
 
-        // Draw left and right edges
         for (int i = 0; i < sideInt; ++i) {
             if (startY + i < BOARD_HEIGHT && startX < BOARD_WIDTH)
-                grid[startY + i][startX] = '*';  // Left edge
+                grid[startY + i][startX] = '*';  
 
             if (startY + i < BOARD_HEIGHT && startX + sideInt - 1 < BOARD_WIDTH)
-                grid[startY + i][startX + sideInt - 1] = '*';  // Right edge
+                grid[startY + i][startX + sideInt - 1] = '*';  
         }
     }
 
@@ -157,45 +150,38 @@ class Rectangle : public Shapes {
 private:
     double  width, height;
 public:
-    Rectangle(double id, double x, double y, double w, double h) : Shapes("Rectangle", id, x, y), width(w), height(h) {}
-
+    Rectangle(int id, int x, int y, double w, double h) : Shapes("Rectangle", id, x, y), width(w), height(h) {}
+    
     string getInfo() const override {
         return "Rectangle: top-left corner (" + std::to_string(x) + ", " + std::to_string(y) +
             "), width " + std::to_string(width) + ", height " + std::to_string(height);
     }
     string getLoad() const override {
-        return "Rectangle: " + std::to_string(getID()) + " " +
-            std::to_string(getX()) + " " +
-            std::to_string(getY()) + " " +
-            std::to_string(width) + " " +
-            std::to_string(height);
+        return "Rectangle: " + to_string(getID()) + " " + to_string(getX()) + " " + to_string(getY()) + " " + to_string(width) + " " + to_string(height);
     }
     string getShape() const override {
         return "square";
     }
     void drawOnBoard(vector<vector<char>>& grid) const override {
-        int startX = static_cast<int>(x);
-        int startY = static_cast<int>(y);
-        int heightInt = static_cast<int>(height);
-        int widthInt = static_cast<int>(width);
-        
-
-        // Малюємо верхню і нижню межі
+        int startX =x;
+        int startY = y;
+        int heightInt = height;
+        int widthInt = width;
+       
         for (int i = 0; i < widthInt; ++i) {
             if (startX + i < grid[0].size() && startY < grid.size())
-                grid[startY][startX + i] = '*';  // Верхня межа
+                grid[startY][startX + i] = '*';  
 
             if (startX + i < grid[0].size() && startY + heightInt - 1 < grid.size())
-                grid[startY + heightInt - 1][startX + i] = '*';  // Нижня межа
+                grid[startY + heightInt - 1][startX + i] = '*';  
         }
 
-        // Малюємо ліву і праву межі
         for (int i = 0; i < heightInt; ++i) {
             if (startY + i < grid.size() && startX < grid[0].size())
-                grid[startY + i][startX] = '*';  // Ліва межа
+                grid[startY + i][startX] = '*';  
 
             if (startY + i < grid.size() && startX + widthInt - 1 < grid[0].size())
-                grid[startY + i][startX + widthInt - 1] = '*';  // Права межа
+                grid[startY + i][startX + widthInt - 1] = '*'; 
         }
     }
 
@@ -203,32 +189,30 @@ public:
 
 class Line : public Shapes {
 private:
-    int x1, y1, x2, y2; // координати двох точок, які визначають лінію
-
+    int x1, y1, x2, y2;
 public:
-    // Конструктор
+
     Line(int id, int x1, int y1, int x2, int y2)
         : Shapes("Line", id, x1, y1), x1(x1), y1(y1), x2(x2), y2(y2) {}
-
-    // Метод для малювання лінії
+    
     void drawOnBoard(vector<vector<char>>& grid) const override {
         int dx = abs(x2 - x1);
         int dy = abs(y2 - y1);
         int sx = (x1 < x2) ? 1 : -1;
         int sy = (y1 < y2) ? 1 : -1;
-        int err = dx - dy;
+        int err = dx - dy;  
 
         int x = x1;
         int y = y1;
 
         while (true) {
-            // Перевірка меж сітки перед малюванням
-            if (x >= 0 && x < BOARD_WIDTH && y >= 0 && y < BOARD_HEIGHT)
+            if (x >= 0 && x < BOARD_WIDTH && y >= 0 && y < BOARD_HEIGHT) {
                 grid[y][x] = '*';
+            }
 
             if (x == x2 && y == y2) break;
 
-            int e2 = err * 2;
+            int e2 = err;
 
             if (e2 > -dy) {
                 err -= dy;
@@ -241,6 +225,7 @@ public:
             }
         }
     }
+
 
     // Метод для отримання інформації про фігуру
     string getInfo() const override {
@@ -267,7 +252,7 @@ public:
         }
     }
 
-    bool isOccupied(double x, double y, const string& type, double param1 = 0, double param2 = 0) {
+    bool isOccupied(int x, int y, const string& type, double param1 = 0, double param2 = 0) {
         for (const auto& shape : shapes) {
             if (shape->getShape() == type) {
                 double shapeX = shape->getX();
@@ -288,7 +273,7 @@ public:
                     }
                     else if (type == "triangle") {
                         const Triangle* triangle = dynamic_cast<const Triangle*>(shape);
-                        if (triangle && triangle->getShape() == type && triangle->getX() == x && triangle->getY() == y && triangle->getInfo().find(to_string(param1)) != string::npos && triangle->getInfo().find(to_string(param2)) != string::npos) {
+                        if (triangle && triangle->getShape() == type && triangle->getX() == x && triangle->getY() == y && triangle->getInfo().find(to_string(param1)) != string::npos ) {
                             return true;
                         }
                     }
@@ -317,23 +302,20 @@ public:
     }
 
     void print() {
-        // Верхня межа
-        std::cout << "+";
+        cout << "+";
         for (int i = 0; i < BOARD_WIDTH; ++i) {
-            std::cout << "-";
+            cout << "-";
         }
-        std::cout << "+" << "\n";
+        cout << "+" << "\n";
 
-        // Основна частина дошки з лівою і правою рамкою
         for (auto& row : grid) {
-            std::cout << "|";  // Ліва межа
+            cout << "|";  
             for (char c : row) {
-                std::cout << c;
+                cout << c;
             }
-            std::cout << "|" << "\n";  // Права межа
+            cout << "|" << "\n";  
         }
 
-        // Нижня межа
         std::cout << "+";
         for (int i = 0; i < BOARD_WIDTH; ++i) {
             std::cout << "-";
@@ -345,12 +327,11 @@ public:
             fill(row.begin(), row.end(), ' ');
         }
 
-        // Малюємо кожну фігуру на сітці
         for (const auto& shape : shapes) {
             shape->drawOnBoard(grid);
         }
     }
-
+    
     void list() {
         if (shapes.empty()) {
             cout << "No shapes added yet.\n";
@@ -363,7 +344,7 @@ public:
         }
     }
 
-    bool isInBounds(double x, double y) const {
+    bool isInBounds(int x, int y) const {
         if (x < 0 || y < 0) {
             cout << "err1" << endl;
             return false;
@@ -375,7 +356,7 @@ public:
         return true;
     }
 
-    void addCircle(double x, double y, double r) {
+    void addCircle(int x, int y, double r) {
         if (!isOccupied(x, y, "circle", r)) {
             if (isInBounds(x, y) || isInBounds(x - r, y) || isInBounds(x + r, y) || isInBounds(x, y - r) || isInBounds(x, y + r)) {
                 shapes.push_back(new Circle(nextID++, x, y, r));
@@ -390,7 +371,7 @@ public:
         
     }
 
-    void addSquare(double x, double y, double s) {
+    void addSquare(int x, int y, double s) {
         if (!isOccupied(x, y, "square", s)) {
             if (isInBounds(x, y) || isInBounds(x + s - 1, y) || isInBounds(x, y + s - 1)) {
                 shapes.push_back(new Square(nextID++, x, y, s));
@@ -405,12 +386,13 @@ public:
         
     }
 
-    void addTriangle(double x, double y, double b, double h) {
-        if (!isOccupied(x, y, "triangle", b, h)) {
+    void addTriangle(int x, int y, double h) {
+        double b = 2 * h;
+        if (!isOccupied(x, y, "triangle", h)) {
             int startX = static_cast<int>(x);
             int startY = static_cast<int>(y);
             if (isInBounds(x, y) || isInBounds(x - b / 2, y + h - 1) || isInBounds(x + b / 2, y + h - 1) || isInBounds(x, y + h)) {
-                shapes.push_back(new Triangle(nextID++, x, y, b, h));
+                shapes.push_back(new Triangle(nextID++, x, y, h));
             }
             else {
                 cout << "Error: Triangle cannot be placed outside the board.\n";
@@ -419,6 +401,7 @@ public:
         else {
             cout << "Error: Triangle already has been placed.\n";
         }
+        
     }
 
     void addLine(int x1, int y1, int x2, int y2) {
@@ -438,7 +421,7 @@ public:
         }
     }
 
-    void addRectangle(double x, double y, double width, double height) {
+    void addRectangle(int x, int y, double width, double height) {
         // Перевіряємо, чи місце для прямокутника вільне
         if (!isOccupied(x, y, "rectangle", width, height)) {
             // Перевіряємо, чи прямокутник не виходить за межі дошки
@@ -479,7 +462,7 @@ public:
             cerr << "Error: Could not open file for writing.\n";
             return;
         }
-        file << shapes.size() << endl;  // Записуємо кількість фігур
+        file << shapes.size() << endl;  
         for (const auto& shape : shapes) {
             file << shape->getLoad() << endl; 
             
@@ -488,7 +471,6 @@ public:
         cout << "Blackboard saved to " << filename << ".\n";
     }
 
-    // Метод для завантаження дошки з файлу
     void load(const string& filename) {
         ifstream file(filename);
         if (!file) {
@@ -496,40 +478,39 @@ public:
             return;
         }
 
-        clear();  // Очищуємо поточну дошку
-
+        clear();  
         int shapeCount;
-        file >> shapeCount;  // Читаємо кількість фігур
+        file >> shapeCount;  
         for (int i = 0; i < shapeCount; ++i) {
             string shapeType;
             file >> shapeType;
             if (shapeType == "Circle:") {
-                int id;
-                double x, y, r;
+                int id, x, y ;
+                double r;
                 file >> id >> x >> y >> r;
                 addCircle(x, y, r);
             }
             else if (shapeType == "Square:") {
-                int id;
-                double x, y, s;
+                int id, x, y;
+                double  s;
                 file >> id >> x >> y >> s;
                 addSquare(x, y, s);
             }
             else if (shapeType == "Triangle:") {
-                int id;
-                double x, y, b, h;
-                file >> id >> x >> y >> b >> h;
-                addTriangle(x, y, b, h);
+                int id, x, y;
+                double  h;
+                file >> id >> x >> y  >> h;
+                addTriangle(x, y, h);
             }
             else if (shapeType == "Line:") {
                 int id;
-                double x1, y1, x2, y2;
+                int x1, y1, x2, y2;
                 file >> id >> x1 >> y1 >> x2 >> y2;
                 addLine(x1, y1, x2, y2);
             }
             else if (shapeType == "Rectangle:") {
-                int id;
-                double x, y, w, h;
+                int id,x, y ;
+                double  w, h;
                 file >> id >> x >> y >> w >> h;
                 addRectangle(x, y, w, h);
             }
@@ -554,16 +535,25 @@ public:
             else if (command == "list") {
                 board.list();
             }
+            else if (command == "shapes") {
+                cout << "> Triangle coordinates base height" << endl;
+                cout << "> Circle coordinates radius" << endl;
+                cout << "> Square coordinates side" << endl;
+                cout << "> Rectangle coordinates width height" << endl;
+                cout << "> Line x1 y1 x2 y2" << endl;
+            }
             else if (command == "add") {
                 string shapeType;
                 cin >> shapeType;
                 if (shapeType == "circle") {
-                    double x, y, r;
+                    double  r;
+                    int x, y;
                     cin >> x >> y >> r;
                     board.addCircle(x, y, r);
                 }
                 else if (shapeType == "square") {
-                    double x, y, s;
+                    double  s;
+                    int x, y;
                     cin >> x >> y >> s;
                     board.addSquare(x, y, s);
                 }
@@ -574,9 +564,16 @@ public:
                     board.addLine(x1, y1, x2, y2);
                 }
                 else if (shapeType == "rectangle") {
-                    double x, y, w, h;
+                    double w, h;
+                    int x, y;
                     cin >> x >> y >> w >> h;
                     board.addRectangle(x, y, w, h);
+                }
+                else if (shapeType == "triangle") {
+                    double  h;
+                    int x, y;
+                    cin >> x >> y  >> h;
+                    board.addTriangle(x, y, h);
                 }
             }
             else if (command == "undo") {
